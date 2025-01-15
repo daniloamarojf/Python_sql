@@ -1,19 +1,19 @@
-import sqlite3
-from prettytable import PrettyTable
-
+import sqlite3 # Biblioteca para trabalhar com bancos de dados SQlite
+from prettytable import PrettyTable # Biblioteca para exibir tabelas formatadas
+# importar o módulo pathlib para trabalar com caminhos relativos ou abstratos
 from pathlib  import Path
 import os
 
 
 os.system('cls')
+# Conexão com o banco de dados (arquivo será criado senão existir)
 
-
-
-db_path = Path('DB') / 'db_rel_1_n.db'
+# Caminno relativo
+db_path = Path('BD') / 'bd_rel_1_n.db'
 conn = sqlite3.connect(str(db_path))
 cursor = conn.cursor()
 
-
+# Criação da tabela 'Clientes' (Tabela principal)
 cursor.execute('''
 CREATE TABLE IF EXISTS Clientes (
     id_cliente INTEGER PRIMARY KEY AUTOINCREMENT, -- ID único para o cliente
@@ -24,7 +24,7 @@ CREATE TABLE IF EXISTS Clientes (
 )
 ''')
 
-
+# Criação da tabela 'Pedidos' (Tabela relacionada)
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Pedidos (
     id_pedido INTERGER PRIMARY KEY AUTOINCREMENT, -- ID único para o pedido
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS Pedidos (
 )
 ''')
 
-
+# Função para verificar se um cliente existe no banco de dados
 
 
 def cliente_existe(id_cliente):
@@ -46,7 +46,7 @@ def cliente_existe(id_cliente):
     
     return cursor.fetchone() is not None
     
-
+# Função para inserir dados na tabela Clientes
 
 
 def inserir_cliente():
@@ -61,16 +61,17 @@ def inserir_cliente():
     conn.commit()
     print('Cliente inserido com sucesso!')
     
-    
+# Função para inserir dados na tabela Pedidos    
     
     
 def inserir_pedido():
+    # listando os clientes
     cursor.execute(''' 
     SELECT * from clientes
     ''')
     resultados = cursor.fetchall()
     
-    
+    # Não posso fazer pedidos sem clientes
     if not resultados:
         print('-' *70)
         print('Nenhum cliente encontrado. Cadastre um cliente primeiro')
@@ -78,33 +79,33 @@ def inserir_pedido():
         return
     
     
-    
+    # Criar e formatar a tabela para exibição
     tabela = PrettyTable(['id_cliente', 'Nome', 'Email', 'Telefone', 'Cidade'])
     for linha in resultados:
         tabela.add_row(linha)
     print(tabela)
     
     try: 
-        
+        # Garantir que o ID seja um número inteiro
         id_cliente = int(input('Digite o ID do cliente: '))
         
-        
+        # Verificar se o cliente existe antes de prosseguir
         if not cliente_existe(id_cliente):
             print('-' * 70)
             print(f'Erro: Cliente com ID {id_cliente} não encontrado!')
             print('Por favor, cadastre o cliente primeiro.')
             print('-' * 70)
-            
+            # Retorna ao menu se o cliente não existir
             return
         
-        
+        # Solicitar os dados do pedido
         produto = input('Digite o nome do produto: ')
         quantidade = int(input('Digite a quantidade: '))
-        
+        # ISO 8601 (YYYY-MM-DD)
         data = input('Digite a data do pedido (YYYY-MM-DD): ')
         valor_total = float(input('Digite o valor total: '))
         
-        
+        # Inserindo o pedido no banco de dados
         cursor.execute(''' 
         INSERT INTO Pedidos (id_cliente, produto, quantidade, data, valor_total)
         VALUES (?,?,?,?,?,)
@@ -116,8 +117,7 @@ def inserir_pedido():
         print('Erro: ID do cliente deve ser um número inteiro.')
         print('-'*70)
         
-        
-        
+# Função para realizar uma consulta com JOIN e exibir resultados          
 def consultar_pedidos():
     cursor.execute('''
     SELECT
@@ -130,7 +130,7 @@ def consultar_pedidos():
     ''')
     resultados = cursor.fetchall()
     
-    
+    # Criar e formatar a tabela para exibição
     tabela = PrettyTable(
         ['Nome', 'Email', 'Cidade', 'Produto', 'Quantidadde', 'Valor Total'])
     for linha in resultados:
@@ -138,14 +138,14 @@ def consultar_pedidos():
     print(tabela)
     
     
-    
-    
+# Função para alterar Pedido 
+# Função para alterar um pedido existente
 def alterar_pedido():
     try:
-        
+        # Solicitar o ID do Pedido
         id_pedido = int(input('Digite o ID do pedido que deseja alterar: '))
         
-        
+        # Verificar se o pedido existe
         cursor.execute(
             'SELECT * FROM Pedidos WHERE id_pedido = ?', (id_pedido,))
         pedido = cursor.fetchone()
@@ -156,7 +156,7 @@ def alterar_pedido():
             print('-'*70)
             return
         
-        
+        # Exibir os dados atuais do pedido
         print('-'*70)
         print('Dados atuais do pedido: ')
         print(f'Produto: {pedido[2]}')
@@ -165,7 +165,7 @@ def alterar_pedido():
         print(f'Valor total: {pedido[5]}')
         print('-'*70)
         
-        
+        # Solicitar novos dados do pedido
         produto = input(
             'Digite o novo nome do produto (ou pressione Enter para manter o atual): ') or pedido[2]
         quantidade = input(
@@ -175,7 +175,7 @@ def alterar_pedido():
         valor_total = input(
             'Digite o novo valor total (ou pressione Enter para manter o atual): ') or pedido[5]
         
-        
+        # Atualizar os dados do pedido
         cursor.execute('''
         UPDATE Pedidos
         SET produto = ?, quantidade = ?, data = ?, valor_total = ?
@@ -188,7 +188,7 @@ def alterar_pedido():
         print('Erro: Entrada inválida.')
         print('-'*70)
         
-        
+# Menu interativo        
 while True:
     print('\nMenu:')
     print('1. Inserir Clientes')
@@ -215,7 +215,7 @@ while True:
         print('-'*70)
         
         
-        
+# Fechar a conexão com o abnco de dados        
 conn.close()
         
         
