@@ -15,7 +15,7 @@ cursor = conn.cursor()
 
 # Criação da tabela 'Clientes' (Tabela principal)
 cursor.execute('''
-CREATE TABLE IF EXISTS Clientes (
+CREATE TABLE IF NOT EXISTS Clientes (
     id_cliente INTEGER PRIMARY KEY AUTOINCREMENT, -- ID único para o cliente
     nome TEXT NOR NULL,                           -- Nome do cliente
     email TEXT UNIQUE NOT NULL,                   -- Email único
@@ -27,7 +27,7 @@ CREATE TABLE IF EXISTS Clientes (
 # Criação da tabela 'Pedidos' (Tabela relacionada)
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Pedidos (
-    id_pedido INTERGER PRIMARY KEY AUTOINCREMENT, -- ID único para o pedido
+    id_pedido INTEGER PRIMARY KEY AUTOINCREMENT, -- ID único para o pedido
     id_cliente INTEGER NOT NULL,                  -- Relacionamento com a tbela clientes
     produto TEXT NOT NULL,                        -- Nome do produto pedido
     quantidade INTEGER NOT NULL,                  -- Quantidade do produto
@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS Pedidos (
 
 def cliente_existe(id_cliente):
     cursor.execute(
-        'SELECT 1 FROM Cliente WHERE id_cliente = ?', (id_cliente))
+        'SELECT 1 FROM Clientes WHERE id_cliente = ?', (id_cliente,))
     
     return cursor.fetchone() is not None
     
@@ -78,7 +78,6 @@ def inserir_pedido():
         print('-'* 70)
         return
     
-    
     # Criar e formatar a tabela para exibição
     tabela = PrettyTable(['id_cliente', 'Nome', 'Email', 'Telefone', 'Cidade'])
     for linha in resultados:
@@ -108,7 +107,7 @@ def inserir_pedido():
         # Inserindo o pedido no banco de dados
         cursor.execute(''' 
         INSERT INTO Pedidos (id_cliente, produto, quantidade, data, valor_total)
-        VALUES (?,?,?,?,?,)
+        VALUES (?,?,?,?,?)
         ''', (id_cliente, produto, quantidade, data, valor_total))
         conn.commit()
         print('Pedido inserido com sucesso!')
@@ -116,6 +115,7 @@ def inserir_pedido():
         print('-'*70)
         print('Erro: ID do cliente deve ser um número inteiro.')
         print('-'*70)
+        
         
 # Função para realizar uma consulta com JOIN e exibir resultados          
 def consultar_pedidos():
@@ -205,7 +205,7 @@ while True:
     elif opcao == '3':
         consultar_pedidos()
     elif opcao == '4':
-        alterar_pedido
+        alterar_pedido()
     elif opcao == '5':
         print('Saindo ...')
         break
